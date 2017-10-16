@@ -16,15 +16,23 @@ io.on("connection", (socket) =>{
   console.log("New user connected");
 
   //Event emiters
-  socket.emit("newMessage", {
-    from: "Tomatito",
-    text: "Dimelo Tomatito te lo envio desde el server",
-    createdAt: 12345
-  });
+  // socket.emit("newMessage", {
+  //   from: "tomatito@tomates.com",
+  //   to: "cebollita@tomates.com",
+  //   text: "Dimelo Cebollita te lo envio desde el server",
+  //   createdAt: new Date().getTime()
+  // });
+
+
 
   //Event listeners
-  socket.on("createMessage" ,(newEmail) =>{
-    console.log("createMessage", newEmail);
+  socket.on("createMessage" ,(message) =>{
+    console.log("createMessage", message);
+    io.emit("newMessage", {
+      from: message.from,
+      text: message.text,
+      createdAt: new Date().getTime()
+    });
   });
 
   socket.on("disconnect", () =>{
