@@ -28,19 +28,24 @@ io.on("connection", (socket) =>{
     text: "New user joined"
   };
 
-
+  var sayHello = () =>{
+    return("Just saying hello");
+  };
   socket.emit("newMessage", generateMessage(newUserMessage));
 
   socket.broadcast.emit("newMessage", generateMessage(newUserJoins));
 
   //Event listeners
-  socket.on("createMessage" ,(message) =>{
+  socket.on("createMessage" ,(message, callback) =>{
     console.log("createMessage", message);
     io.emit("newMessage", {
       from: message.from,
       text: message.text,
       createdAt: new Date().getTime()
     });
+
+    callback();
+
     // socket.broadcast.emit("newMessage",{
     //     from: message.from,
     //     text: message.text,
