@@ -44,9 +44,16 @@ socket.on("newMessage", function(message){
 
   li.append(div0);
 
+  var chatBoard = jQuery("#chat-board");
+  // var panelBody = jQuery("#panel-body");
   // li.text(`${message.from}: ${message.text}`);
-
-  jQuery("#chat").append(li);
+  chatBoard.append(li);
+  //chatBoard.scrollTop(300);
+  //varshouldScroll = messages.scrollTop + messages.clientHeight === messages.scrollHeight;
+  //chatBoard.animate({scrollTop: 200}, 100);
+  // var doc = document.getElementById("chat-board")
+  // doc.scrollTop =1000-doc.scrollTop;
+  // $('html, body').animate({ scrollTop:3031 },"fast");
 });
 
 // socket.emit("createMessage", {
@@ -57,25 +64,28 @@ socket.on("newMessage", function(message){
 //   // console.log(data);
 // });
 
-jQuery("#btn-input").on("submit", function(event){
+var messageTextbox = jQuery("[name=message]");
+
+jQuery("#btn-chat").on("submit", function(event){
   event.preventDefault();
-
-  socket.emit("createMessage", {
-    from: "User name",
-    text: jQuery("[name=message]").val()
-  }, function(){
-
-  });
+  //
+  // socket.emit("createMessage", {
+  //   from: "User name",
+  //   text: messageTextbox.val()
+  // }, function(){
+  //   messageTextbox.val('');
+  // });
 
 });
+
 jQuery("#message-form").on("submit", function(event){
   event.preventDefault();
 
   socket.emit("createMessage", {
     from: "User name",
-    text: jQuery("[name=message]").val()
+    text: messageTextbox.val()
   }, function(){
-
+    messageTextbox.val('');
   });
 });
 
