@@ -11,45 +11,17 @@ socket.on("disconnect", function(){
 socket.on("newMessage", function(message){
   console.log("New message", message);
 
-  var li = jQuery("<li></li>");
-  li.attr("class","left clearfix")
-  var div0 = jQuery("<div></div>");
-  div0.attr("class","chat-body clearfix");
-
-  var divUsername = jQuery("<div></div>");
-  divUsername.attr("class","header");
-  div0.append(divUsername);
-
-  var strongUsername = jQuery("<strong></strong>");
-  strongUsername.attr("class","primary-font");
-  strongUsername.attr("id","username");
-  strongUsername.text(`${message.from}`);
-
-  var smallTime = jQuery("<small></small>");
-  smallTime.attr("class","pull-right text-muted");
-
   var date = moment(message.createdAt).format('MMM D YYYY - h:mm a');
-  // var date = new Date(message.createdAt);
-
-  var spanTime = jQuery("<span></span>");
-  spanTime.attr("class","glyphicon glyphicon-time");
-  spanTime.text(` ${date}`);
-
-  smallTime.append(spanTime);
-  divUsername.append(strongUsername);
-  divUsername.append(smallTime);
-
-  var chatText = jQuery("<p></p>");
-  chatText.text(`${message.text}`);
-  div0.append(divUsername);
-  div0.append(chatText);
-
-  li.append(div0);
-
   var chatBoard = jQuery("#chat-board");
-  chatBoard.append(li);
-  $("#chat-board").animate({scrollTop: 3000});
-  // chatBoard.animate({ scrollTop: chatBoard.prop('scrollHeight')}, 1000);
+  var template = jQuery("#message-template").html();
+
+  var list = Mustache.render(template, {
+    username: message.from,
+    text: message.text,
+    createdAt: date
+  });
+
+  chatBoard.append(list);
 
 });
 

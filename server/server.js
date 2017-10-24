@@ -20,7 +20,7 @@ io.on("connection", (socket) =>{
   var newUserMessage = {
     from: "Admin",
     to: "New User",
-    text: "Welcome user"
+    text: "Welcome to the chat app"
   };
   var newUserJoins = {
     from: "Admin",
