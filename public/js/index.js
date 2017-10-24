@@ -28,10 +28,12 @@ socket.on("newMessage", function(message){
   var smallTime = jQuery("<small></small>");
   smallTime.attr("class","pull-right text-muted");
 
-  var date = new Date(message.createdAt);
+  var date = moment(message.createdAt).format('MMM D YYYY - h:mm a');
+  // var date = new Date(message.createdAt);
+
   var spanTime = jQuery("<span></span>");
   spanTime.attr("class","glyphicon glyphicon-time");
-  spanTime.text(`${date}`);
+  spanTime.text(` ${date}`);
 
   smallTime.append(spanTime);
   divUsername.append(strongUsername);
@@ -45,15 +47,10 @@ socket.on("newMessage", function(message){
   li.append(div0);
 
   var chatBoard = jQuery("#chat-board");
-  // var panelBody = jQuery("#panel-body");
-  // li.text(`${message.from}: ${message.text}`);
   chatBoard.append(li);
-  //chatBoard.scrollTop(300);
-  //varshouldScroll = messages.scrollTop + messages.clientHeight === messages.scrollHeight;
-  //chatBoard.animate({scrollTop: 200}, 100);
-  // var doc = document.getElementById("chat-board")
-  // doc.scrollTop =1000-doc.scrollTop;
-  // $('html, body').animate({ scrollTop:3031 },"fast");
+  $("#chat-board").animate({scrollTop: 3000});
+  // chatBoard.animate({ scrollTop: chatBoard.prop('scrollHeight')}, 1000);
+
 });
 
 // socket.emit("createMessage", {
