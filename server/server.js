@@ -37,7 +37,7 @@ io.on("connection", (socket) =>{
 
   //Event listeners
   socket.on("createMessage" ,(message, callback) =>{
-    console.log("createMessage", message);
+    // console.log("createMessage", message);
     io.emit("newMessage", {
       from: message.from,
       text: message.text,
