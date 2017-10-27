@@ -1,93 +1,93 @@
 var socket = io();
 
-
-function scrollToBotton(){
-  //Selectors
-  var chatBoard = jQuery("#chat-board");
-  var panel = jQuery("#panel");
-  var newMessage = chatBoard.children("li:last-child");
-
-  //Heights
-  var clientHeight = panel.prop('clientHeight');
-  var scrollTop = panel.prop('scrollTop');
-  var scrollHeight = panel.prop('scrollHeight');
+function scrollToBottom () {
+  // Selectors
+  var messages = jQuery('#messages');
+  var newMessage = messages.children('li:last-child')
+  // Heights
+  var clientHeight = messages.prop('clientHeight');
+  var scrollTop = messages.prop('scrollTop');
+  var scrollHeight = messages.prop('scrollHeight');
   var newMessageHeight = newMessage.innerHeight();
   var lastMessageHeight = newMessage.prev().innerHeight();
 
-  if( (clientHeight+scrollTop+newMessageHeight+lastMessageHeight) >= scrollHeight){
-    panel.scrollTop(scrollHeight);
+  if (clientHeight + scrollTop + newMessageHeight + lastMessageHeight >= scrollHeight) {
+    messages.scrollTop(scrollHeight);
   }
-
-
 }
 
-socket.on("connect", function(){
-  console.log("Connected to server");
+socket.on('connect', function () {
+  var params = jQuery.deparam(window.location.search);
+
+  socket.emit('join', params, function (err) {
+    if (err) {
+      alert(err);
+      window.location.href = '/';
+    } else {
+      console.log('No error');
+    }
+  });
 });
 
-socket.on("disconnect", function(){
-  console.log("Disconnected from server");
+socket.on('disconnect', function () {
+  console.log('Disconnected from server');
 });
 
-socket.on("newMessage", function(message){
-  console.log("New message", message);
-
-  var date = moment(message.createdAt).format('MMM D YYYY - h:mm a');
-  var chatBoard = jQuery("#chat-board");
-  var template = jQuery("#message-template").html();
-
-  var list = Mustache.render(template, {
-    username: message.from,
+socket.on('newMessage', function (message) {
+  var formattedTime = moment(message.createdAt).format('h:mm a');
+  var template = jQuery('#message-template').html();
+  var html = Mustache.render(template, {
     text: message.text,
-    createdAt: date
+    from: message.from,
+    createdAt: formattedTime
   });
 
-  chatBoard.append(list);
-  scrollToBotton();
+  jQuery('#messages').append(html);
+  scrollToBottom();
 });
 
-// socket.emit("createMessage", {
-//   from: "pimiento@tomates.com",
-//   to: "tomatito@tomates.com",
-//   text: "Hola Tomatito desde index.js"
-// }, function(data){
-//   // console.log(data);
-// });
+socket.on('newLocationMessage', function (message) {
+  var formattedTime = moment(message.createdAt).format('h:mm a');
+  var template = jQuery('#location-message-template').html();
+  var html = Mustache.render(template, {
+    from: message.from,
+    url: message.url,
+    createdAt: formattedTime
+  });
 
-var messageTextbox = jQuery("[name=message]");
-
-jQuery("#btn-chat").on("submit", function(event){
-  event.preventDefault();
-  console.log("HOLA");
-  //
-  // socket.emit("createMessage", {
-  //   from: "User name",
-  //   text: messageTextbox.val()
-  // }, function(){
-  //   messageTextbox.val('');
-  // });
-
+  jQuery('#messages').append(html);
+  scrollToBottom();
 });
 
-jQuery("#message-form").on("submit", function(event){
-  event.preventDefault();
+jQuery('#message-form').on('submit', function (e) {
+  e.preventDefault();
 
-  socket.emit("createMessage", {
-    from: "User name",
+  var messageTextbox = jQuery('[name=message]');
+
+  socket.emit('createMessage', {
+    from: 'User',
     text: messageTextbox.val()
-  }, function(){
-    messageTextbox.val('');
+  }, function () {
+    messageTextbox.val('')
   });
 });
 
-// var locationButton = jQuery("#btn-geolocation");
-// locationButton.on("click", function(){
-//   if(navigator.geolocation){
-//     return alert("Geolocation not supported by browser");
-//   }
-//   navigator.geolocation.getCurrentPosition(function(position){
-//     console.log(position);
-//   },function(){
-//     alert("Unable to fetch location.")
-//   });
-// });
+var locationButton = jQuery('#send-location');
+locationButton.on('click', function () {
+  if (!navigator.geolocation) {
+    return alert('Geolocation not supported by your browser.');
+  }
+
+  locationButton.attr('disabled', 'disabled').text('Sending location...');
+
+  navigator.geolocation.getCurrentPosition(function (position) {
+    locationButton.removeAttr('disabled').text('Send location');
+    socket.emit('createLocationMessage', {
+      latitude: position.coords.latitude,
+      longitude: position.coords.longitude
+    });
+  }, function () {
+    locationButton.removeAttr('disabled').text('Send location');
+    alert('Unable to fetch location.');
+  });
+});

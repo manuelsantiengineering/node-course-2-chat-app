@@ -1,66 +1,53 @@
-require("./config/config");
+const path = require('path');
+const http = require('http');
+const express = require('express');
+const socketIO = require('socket.io');
 
-const path = require("path");
-const http = require("http");
-const express = require("express");
-const socketIO = require("socket.io");
-
-const {generateMessage} = require("./utils/message");
-
-const publicPath = path.join(__dirname, "../public");
+const {generateMessage, generateLocationMessage} = require('./utils/message');
+const {isRealString} = require('./utils/validation');
+const publicPath = path.join(__dirname, '../public');
+const port = process.env.PORT || 3000;
 var app = express();
 var server = http.createServer(app);
 var io = socketIO(server);
 
 app.use(express.static(publicPath));
 
-io.on("connection", (socket) =>{
-  console.log("New user connected");
+io.on('connection', (socket) => {
+  console.log('New user connected');
 
-  var newUserMessage = {
-    from: "Admin",
-    to: "New User",
-    text: "Welcome to the chat app"
-  };
-  var newUserJoins = {
-    from: "Admin",
-    to: "Broadcast",
-    text: "New user joined"
-  };
+  socket.on('join', (params, callback) => {
+    if (!isRealString(params.name) || !isRealString(params.room)) {
+      callback('Name and room name are required.');
+    }
 
-  var sayHello = () =>{
-    return("Just saying hello");
-  };
-  socket.emit("newMessage", generateMessage(newUserMessage));
+    socket.join(params.room);
+    // socket.leave('The Office Fans');
 
-  socket.broadcast.emit("newMessage", generateMessage(newUserJoins));
+    // io.emit -> io.to('The Office Fans').emit
+    // socket.broadcast.emit -> socket.broadcast.to('The Office Fans').emit
+    // socket.emit
 
-  //Event listeners
-  socket.on("createMessage" ,(message, callback) =>{
-    // console.log("createMessage", message);
-    io.emit("newMessage", {
-      from: message.from,
-      text: message.text,
-      createdAt: new Date().getTime()
-    });
-
+    socket.emit('newMessage', generateMessage('Admin', 'Welcome to the chat app'));
+    socket.broadcast.to(params.room).emit('newMessage', generateMessage('Admin', `${params.name} has joined.`));
     callback();
-
-    // socket.broadcast.emit("newMessage",{
-    //     from: message.from,
-    //     text: message.text,
-    //     createdAt: new Date().getTime()
-    // });
   });
 
-  socket.on("disconnect", () =>{
-    console.log("User was disconnected from server");
+  socket.on('createMessage', (message, callback) => {
+    console.log('createMessage', message);
+    io.emit('newMessage', generateMessage(message.from, message.text));
+    callback();
+  });
+
+  socket.on('createLocationMessage', (coords) => {
+    io.emit('newLocationMessage', generateLocationMessage('Admin', coords.latitude, coords.longitude));
+  });
+
+  socket.on('disconnect', () => {
+    console.log('User was disconnected');
   });
 });
 
-
-
-
-server.listen(process.env.PORT, () => {
-  console.log(`Started on port ${process.env.PORT}`);
+server.listen(port, () => {
+  console.log(`Server is up on ${port}`);
 });
